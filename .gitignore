@@ -1,0 +1,7 @@
+/.vagga
+/Cargo.lock
+/target
+__pycache__
+*.pyo
+*.pyc
+

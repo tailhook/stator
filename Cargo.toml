@@ -1,0 +1,23 @@
+[package]
+name = "stator"
+description = """
+    A library that provides C API and dynamic library for rotor
+"""
+license = "MIT"
+readme = "README.rst"
+keywords = ["rotor", "c", "python"]
+homepage = "http://github.com/tailhook/stator"
+version = "0.1.0"
+authors = ["paul@colomiets.name"]
+
+[dependencies]
+rotor = "0.5.0"
+rotor-http = {git="git://github.com/tailhook/rotor-http"}
+rotor-carbon = "0.1.0"
+rotor-dns = "0.1.0"
+
+[dev-dependencies]
+argparse = "0.2.1"
+
+[lib]
+name = "stator"
