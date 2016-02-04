@@ -5,6 +5,7 @@ use rotor::{Loop, Config};
 use rotor_tools::loop_ext::LoopInstanceExt;
 
 use super::{Context, Manager, Main, Fsm};
+use carbon;
 
 impl Manager {
     pub fn start() -> Manager {
@@ -21,6 +22,7 @@ impl Manager {
             thread: thread::spawn(|| {
                 inst.run()
             }),
+            carbon: carbon::Holder::new(),
         }
     }
 }

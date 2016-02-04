@@ -21,6 +21,7 @@ pub struct Manager {
     thread: JoinHandle<Result<(), io::Error>>,
     notifier: Notifier,
     queue: Arc<Mutex<VecDeque<Seed>>>,
+    pub carbon: carbon::Holder,
 }
 
 pub struct Context;
