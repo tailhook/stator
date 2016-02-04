@@ -11,13 +11,16 @@ version = "0.1.0"
 authors = ["paul@colomiets.name"]
 
 [dependencies]
-rotor = "0.5.0"
+rotor = "0.5.1"
 rotor-http = {git="git://github.com/tailhook/rotor-http"}
-rotor-carbon = "0.1.0"
+rotor-carbon = "0.2.0"
 rotor-dns = "0.1.0"
+rotor-tools = "0.2.0"
+lazy_static = "0.1.15"
 
 [dev-dependencies]
 argparse = "0.2.1"
 
 [lib]
 name = "stator"
+crate-type = ["dylib"]
