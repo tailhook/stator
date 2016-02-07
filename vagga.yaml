@@ -15,6 +15,23 @@ commands:
     container: ubuntu
     run: [cargo, test]
 
+  example-carbon-py: !Command
+    description: "Run python example that submits some garbage to carbon
+                  (prerequisites: make)"
+    container: ubuntu
+    environ:
+      PYTHONPATH: /work
+      LD_LIBRARY_PATH: target/release
+      CARBON_HOST: 127.0.0.1
+    run: [python, "examples/carbon.py"]
+
+  example-graphiti-py: !Command
+    description: "Run alternative to carbon, pure-python graphiti example"
+    container: graphiti
+    environ:
+      CARBON_HOST: 127.0.0.1
+    run: [python, "examples/alternative-graphiti.py"]
+
 containers:
 
   ubuntu:
@@ -35,3 +52,9 @@ containers:
     environ:
       HOME: /work/target
       USER: pc
+
+  graphiti:
+    setup:
+    - !Alpine v3.3
+    - !Install [ca-certificates]
+    - !Py2Install [six, graphiti]

@@ -17,6 +17,7 @@ rotor-carbon = "0.4.0"
 rotor-dns = "0.1.0"
 rotor-tools = "0.2.0"
 lazy_static = "0.1.15"
+void = "0.0.5"
 
 [dev-dependencies]
 argparse = "0.2.1"

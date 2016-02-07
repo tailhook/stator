@@ -33,6 +33,7 @@ pub struct Main {
 
 pub enum Fsm {
     Main(Main),
+    Carbon(carbon::Fsm<Context>),
 }
 pub enum Seed {
     Carbon(carbon::Seed),

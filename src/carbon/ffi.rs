@@ -22,6 +22,7 @@ pub extern fn carbon_connect_ipv4(ip: u32, port: u16) -> isize {
     return id;
 }
 
+#[no_mangle]
 pub unsafe extern fn carbon_add_i64(port: isize,
     name: *const u8, name_len:usize, value: i64)
 {
@@ -34,6 +35,7 @@ pub unsafe extern fn carbon_add_i64(port: isize,
     }).ok();
 }
 
+#[no_mangle]
 pub unsafe extern fn carbon_add_i64_at(port: isize,
     name: *const u8, name_len:usize, value: i64, timestamp: u64)
 {
@@ -46,6 +48,7 @@ pub unsafe extern fn carbon_add_i64_at(port: isize,
     }).ok();
 }
 
+#[no_mangle]
 pub unsafe extern fn carbon_add_f64(port: isize,
     name: *const u8, name_len:usize, value: f64)
 {
@@ -58,6 +61,7 @@ pub unsafe extern fn carbon_add_f64(port: isize,
     }).ok();
 }
 
+#[no_mangle]
 pub unsafe extern fn carbon_add_f64_at(port: isize,
     name: *const u8, name_len:usize, value: f64, timestamp: u64)
 {
