@@ -9,6 +9,7 @@ use std::thread::JoinHandle;
 use std::collections::VecDeque;
 
 use rotor::Notifier;
+use rotor::mio::tcp::TcpStream;
 
 use carbon;
 
@@ -33,7 +34,7 @@ pub struct Main {
 
 pub enum Fsm {
     Main(Main),
-    Carbon(carbon::Fsm<Context>),
+    Carbon(carbon::Fsm<Context, TcpStream>),
 }
 pub enum Seed {
     Carbon(carbon::Seed),

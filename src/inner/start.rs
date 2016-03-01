@@ -1,7 +1,6 @@
-use std::io;
 use std::thread;
 
-use rotor::{Loop, Config};
+use rotor::{Loop, Config, Response};
 use rotor_tools::loop_ext::LoopInstanceExt;
 
 use super::{Context, Manager, Main, Fsm};
@@ -14,7 +13,7 @@ impl Manager {
         let (queue, notifier) = inst.add_and_fetch(Fsm::Main, |scope| {
             let m = Main::new();
             let q = m.queue.clone();
-            Ok::<_, io::Error>((m, (q, scope.notifier())))
+            Response::ok((m, (q, scope.notifier())))
         }).unwrap();
         Manager {
             notifier: notifier,

@@ -1,7 +1,7 @@
 # This is an pure-python alternative to stator's carbon implementation
 import os
 import random
-from time import sleep
+from time import sleep, time, clock
 from graphiti.client import Client
 
 
@@ -10,9 +10,12 @@ def main():
     while True:
         v1 = random.randrange(10, 100)
         v2 = random.randrange(100, 1000)/10.0
-        carbon.send("py.graphiti.random.int", v1)
-        carbon.send("py.graphiti.random.float", v2)
-        sleep(1)
+        start = clock()
+        carbon.send("py.stator.random.int", v1)
+        carbon.send("py.stator.random.float", v2)
+        sleep(60)
+        end = clock()
+        print(format(end - start, '0.5f'))
 
 
 if __name__ == '__main__':

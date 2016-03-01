@@ -2,7 +2,7 @@
 #[macro_use] extern crate rotor;
 extern crate rotor_tools;
 extern crate rotor_carbon;
-extern crate void;
+extern crate cbor;
 
 mod inner;
 mod carbon;

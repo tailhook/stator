@@ -1,8 +1,7 @@
-use std::error::Error;
 use std::sync::{Arc, Mutex};
 use std::collections::VecDeque;
 
-use void::{Void, unreachable};
+use rotor::void::{Void, unreachable};
 use rotor::{Machine, Scope, EventSet, Response};
 
 use super::{Context, Fsm, Main, Seed};
@@ -24,10 +23,10 @@ impl Machine for Fsm {
     type Context = Context;
     type Seed = Seed;
     fn create(seed: Self::Seed, scope: &mut Scope<Self::Context>)
-        -> Result<Self, Box<Error>>
+        -> Response<Self, Void>
     {
         match seed {
-            Seed::Carbon(x) => carbon::create(x, scope).map(Fsm::Carbon),
+            Seed::Carbon(x) => carbon::create(x, scope).wrap(Fsm::Carbon),
         }
     }
 
