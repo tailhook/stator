@@ -1,11 +1,13 @@
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate rotor;
 extern crate rotor_tools;
+extern crate rotor_http;
 extern crate rotor_carbon;
 extern crate cbor;
 
 mod inner;
 mod carbon;
+mod http;
 
 pub use carbon::ffi::carbon_connect_ipv4;
 pub use carbon::ffi::carbon_add_i64;

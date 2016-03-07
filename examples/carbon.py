@@ -1,5 +1,5 @@
 import random
-from time import sleep
+from time import sleep, time
 from stator import carbon
 from time import clock
 
@@ -9,12 +9,12 @@ def main():
     while True:
         v1 = random.randrange(10, 100)
         v2 = random.randrange(100, 1000)/10.0
-        start = clock()
+        start = time()
         carbon.add("py.stator.random.int", v1)
         carbon.add("py.stator.random.float", v2)
-        sleep(1)
-        end = clock()
+        end = time()
         print(format(end - start, '0.5f'))
+        sleep(1)
 
 
 if __name__ == '__main__':

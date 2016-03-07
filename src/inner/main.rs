@@ -4,8 +4,9 @@ use std::collections::VecDeque;
 use rotor::void::{Void, unreachable};
 use rotor::{Machine, Scope, EventSet, Response};
 
-use super::{Context, Fsm, Main, Seed};
+use super::{Context, Fsm, Main, Command, Command as C};
 use carbon;
+use http;
 
 impl Main {
     pub fn new() -> Main {
@@ -21,12 +22,20 @@ fn void<T>(x: Void) -> T {
 
 impl Machine for Fsm {
     type Context = Context;
-    type Seed = Seed;
-    fn create(seed: Self::Seed, scope: &mut Scope<Self::Context>)
+    type Seed = Command;
+    fn create(seed: Command, scope: &mut Scope<Self::Context>)
         -> Response<Self, Void>
     {
         match seed {
-            Seed::Carbon(x) => carbon::create(x, scope).wrap(Fsm::Carbon),
+            Command::NewCarbon(x) => {
+                carbon::create(x, scope).wrap(Fsm::Carbon)
+            }
+            Command::NewHttp(x) => {
+                http::create(x, scope).wrap(Fsm::Http)
+            }
+            Command::AcceptHttp(x) => {
+                <http::Fsm as Machine>::create(x, scope).wrap(Fsm::Http)
+            }
         }
     }
 
@@ -36,6 +45,7 @@ impl Machine for Fsm {
         match self {
             Fsm::Main(_) => Response::ok(self),
             Fsm::Carbon(x) => x.ready(ev, scope).map(Fsm::Carbon, void),
+            Fsm::Http(x) => x.ready(ev, scope).map(Fsm::Http, C::AcceptHttp),
         }
     }
     fn spawned(self, scope: &mut Scope<Self::Context>)
@@ -44,6 +54,7 @@ impl Machine for Fsm {
         match self {
             Fsm::Main(_) => Response::ok(self),
             Fsm::Carbon(x) => x.spawned(scope).map(Fsm::Carbon, void),
+            Fsm::Http(x) => x.spawned(scope).map(Fsm::Http, C::AcceptHttp),
         }
     }
     fn timeout(self, scope: &mut Scope<Self::Context>)
@@ -52,6 +63,7 @@ impl Machine for Fsm {
         match self {
             Fsm::Main(_) => Response::ok(self),
             Fsm::Carbon(x) => x.timeout(scope).map(Fsm::Carbon, void),
+            Fsm::Http(x) => x.timeout(scope).map(Fsm::Http, C::AcceptHttp),
         }
     }
     fn wakeup(self, scope: &mut Scope<Self::Context>)
@@ -67,6 +79,7 @@ impl Machine for Fsm {
                 }
             }
             Fsm::Carbon(x) => x.wakeup(scope).map(Fsm::Carbon, void),
+            Fsm::Http(x) => x.wakeup(scope).map(Fsm::Http, C::AcceptHttp),
         }
     }
 }

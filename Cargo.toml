@@ -11,12 +11,11 @@ version = "0.1.0"
 authors = ["paul@colomiets.name"]
 
 [dependencies]
-rotor = "0.6.0"
-rotor-stream = "0.5.0"
-rotor-http = "0.6.0"
-rotor-carbon = "0.5.0"
-rotor-dns = "0.1.0"
-rotor-tools = "0.3.0"
+rotor = "0.6.1"
+rotor-http = {rev="175ea94", git="git://github.com/tailhook/rotor-http"}
+rotor-carbon = "0.5.1"
+rotor-dns = "0.4.0"
+rotor-tools = "0.3.1"
 lazy_static = "0.1.15"
 cbor-codec = "0.4.2"
 

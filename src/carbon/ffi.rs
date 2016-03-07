@@ -3,73 +3,77 @@ use std::{isize, slice, str};
 use std::sync::mpsc::channel;
 use std::sync::atomic::Ordering;
 
-use inner::{MANAGER, Seed};
+use inner::{MANAGER, Command, SockId};
+use inner::Socket::Carbon;
 
 #[no_mangle]
-pub extern fn carbon_connect_ipv4(ip: u32, port: u16) -> isize {
+pub extern fn carbon_connect_ipv4(ip: u32, port: u16) -> u64 {
     let (tx, rx) = channel();
-    MANAGER.add_machine(
-        Seed::Carbon((
+    MANAGER.post_message(
+        Command::NewCarbon((
             SocketAddr::V4(V4::new(Ipv4Addr::from(ip), port)),
             tx,
         )));
-    // TODO(tailhook) generate id
-    let sink = rx.recv().unwrap();
-    let id = MANAGER.carbon.counter.fetch_add(1, Ordering::Relaxed);
-    assert!(id < isize::MAX);
-    let ref mut sinks = MANAGER.carbon.sinks.lock().unwrap();
-    sinks.insert(id, sink);
-    return id;
+    let sink = rx.recv().expect("carbon sink received");
+    return MANAGER.insert(Carbon(sink)) as u64;
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_i64(port: isize,
+pub unsafe extern fn carbon_add_i64(socket: u64,
     name: *const u8, name_len:usize, value: i64)
 {
     let slice = slice::from_raw_parts(name, name_len);
     let name = str::from_utf8(slice).unwrap();
-    MANAGER.carbon.sinks.lock().map(|sinks| {
-        sinks.get(&port).map(|sink| {
-            sink.sender().add_value(name, value)
-        });
+    MANAGER.with_socket(socket as SockId, |sock| {
+        match *sock {
+            Carbon(ref sink) => sink.sender().add_value(name, value),
+            _ => {}
+        }
     }).ok();
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_i64_at(port: isize,
+pub unsafe extern fn carbon_add_i64_at(socket: u64,
     name: *const u8, name_len:usize, value: i64, timestamp: u64)
 {
     let slice = slice::from_raw_parts(name, name_len);
     let name = str::from_utf8(slice).unwrap();
-    MANAGER.carbon.sinks.lock().map(|sinks| {
-        sinks.get(&port).map(|sink| {
-            sink.sender().add_value_at(name, value, timestamp)
-        });
+    MANAGER.with_socket(socket as SockId, |sock| {
+        match *sock {
+            Carbon(ref sink) => {
+                sink.sender().add_value_at(name, value, timestamp)
+            }
+            _ => {}
+        }
     }).ok();
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_f64(port: isize,
+pub unsafe extern fn carbon_add_f64(socket: u64,
     name: *const u8, name_len:usize, value: f64)
 {
     let slice = slice::from_raw_parts(name, name_len);
     let name = str::from_utf8(slice).unwrap();
-    MANAGER.carbon.sinks.lock().map(|sinks| {
-        sinks.get(&port).map(|sink| {
-            sink.sender().add_value(name, value)
-        });
+    MANAGER.with_socket(socket as SockId, |sock| {
+        match *sock {
+            Carbon(ref sink) => sink.sender().add_value(name, value),
+            _ => {}
+        }
     }).ok();
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_f64_at(port: isize,
+pub unsafe extern fn carbon_add_f64_at(socket: u64,
     name: *const u8, name_len:usize, value: f64, timestamp: u64)
 {
     let slice = slice::from_raw_parts(name, name_len);
     let name = str::from_utf8(slice).unwrap();
-    MANAGER.carbon.sinks.lock().map(|sinks| {
-        sinks.get(&port).map(|sink| {
-            sink.sender().add_value_at(name, value, timestamp)
-        });
+    MANAGER.with_socket(socket as SockId, |sock| {
+        match *sock {
+            Carbon(ref sink) => {
+                sink.sender().add_value_at(name, value, timestamp)
+            }
+            _ => {}
+        }
     }).ok();
 }

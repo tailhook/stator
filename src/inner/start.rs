@@ -1,4 +1,8 @@
 use std::thread;
+use std::sync::{Arc, Mutex};
+use std::sync::mpsc::channel;
+use std::sync::atomic::AtomicUsize;
+use std::collections::HashMap;
 
 use rotor::{Loop, Config, Response};
 use rotor_tools::loop_ext::LoopInstanceExt;
@@ -15,13 +19,17 @@ impl Manager {
             let q = m.queue.clone();
             Response::ok((m, (q, scope.notifier())))
         }).unwrap();
+        let (tx, rx) = channel();
         Manager {
             notifier: notifier,
             queue: queue,
             thread: thread::spawn(|| {
                 inst.run()
             }),
-            carbon: carbon::Holder::new(),
+            sockets: Arc::new(Mutex::new(HashMap::new())),
+            id_gen: AtomicUsize::new(1),
+            sender: Arc::new(Mutex::new(tx)),
+            input: Arc::new(Mutex::new(rx)),
         }
     }
 }

@@ -6,28 +6,15 @@ use std::collections::HashMap;
 
 use rotor::{Scope, Response, Void};
 use rotor::mio::tcp::TcpStream;
-use rotor_carbon::{Sink, connect_ip};
+use rotor_carbon::{Sink as Carbon, connect_ip};
 
 use inner::{Context};
 
 pub mod ffi;
 
 pub use rotor_carbon::Fsm;
-pub type Seed = (SocketAddr, Sender<Sink<Context, TcpStream>>);
-
-pub struct Holder {
-    counter: AtomicIsize,
-    sinks: Arc<Mutex<HashMap<isize, Sink<Context, TcpStream>>>>,
-}
-
-impl Holder {
-    pub fn new() -> Holder {
-        Holder {
-            counter: AtomicIsize::new(1),
-            sinks: Arc::new(Mutex::new(HashMap::new())),
-        }
-    }
-}
+pub type Seed = (SocketAddr, Sender<Sink>);
+pub type Sink = Carbon<Context, TcpStream>;
 
 pub fn create((addr, sender): Seed, scope: &mut Scope<Context>)
     -> Response<Fsm<Context, TcpStream>, Void>
