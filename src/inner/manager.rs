@@ -19,7 +19,7 @@ impl Manager {
         .send((sock_id, buf))
         .expect("send succeeds")
     }
-    pub fn insert(&self, mut sock: Socket) -> SockId {
+    pub fn insert(&self, sock: Socket) -> SockId {
         loop {
             let nid = self.id_gen.fetch_add(1, Ordering::SeqCst);
             if nid == usize::MAX {

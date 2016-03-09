@@ -8,7 +8,6 @@ use rotor::{Loop, Config, Response};
 use rotor_tools::loop_ext::LoopInstanceExt;
 
 use super::{Context, Manager, Main, Fsm};
-use carbon;
 
 impl Manager {
     pub fn start() -> Manager {

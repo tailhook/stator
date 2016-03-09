@@ -1,7 +1,6 @@
 use std::net::{SocketAddr, SocketAddrV4 as V4, Ipv4Addr};
-use std::{isize, slice, str};
+use std::{slice, str};
 use std::sync::mpsc::channel;
-use std::sync::atomic::Ordering;
 
 use inner::{MANAGER, Command, SockId};
 use inner::Socket::Carbon;

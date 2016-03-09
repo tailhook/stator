@@ -1,8 +1,5 @@
 use std::net::SocketAddr;
 use std::sync::mpsc::Sender;
-use std::sync::atomic::AtomicIsize;
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
 
 use rotor::{Scope, Response, Void};
 use rotor::mio::tcp::TcpStream;

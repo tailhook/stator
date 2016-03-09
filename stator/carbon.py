@@ -6,7 +6,7 @@ from .lib import dll
 from .util import convert_ip
 
 dll.stator_carbon_connect_ipv4.argtypes = [c_uint32, c_uint16]
-dll.stator_carbon_connect_ipv4.restype = c_ssize_t
+dll.stator_carbon_connect_ipv4.restype = c_uint64
 
 dll.stator_carbon_add_i64.argtypes = [c_ssize_t, c_char_p, c_size_t, c_int64]
 dll.stator_carbon_add_i64.restype = None

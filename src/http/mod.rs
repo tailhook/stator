@@ -1,18 +1,18 @@
 use std::net::SocketAddr;
 
 use rotor::{Scope, Response, Void};
-use rotor::mio::tcp::{TcpListener, TcpStream};
+use rotor::mio::tcp::{TcpListener};
 use rotor_http::server;
 
-use inner::Context;
+use inner::{Context, SockId};
 
 pub mod ffi;
 mod fsm;
 
-pub type Seed = SocketAddr;
+pub type Seed = (SocketAddr, SockId);
 pub type Fsm = server::Fsm<fsm::BufferedHandler, TcpListener>;
 
-pub fn create(addr: SocketAddr, scope: &mut Scope<Context>)
+pub fn create((addr, id): (SocketAddr, SockId), scope: &mut Scope<Context>)
     -> Response<Fsm, Void>
 {
     let sock = TcpListener::bind(&addr).expect("stator http bind");

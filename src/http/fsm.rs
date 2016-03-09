@@ -19,12 +19,12 @@ pub enum BufferedHandler {
 
 impl Server for BufferedHandler {
     type Context = Context;
-    fn headers_received(head: Head, response: &mut Response,
+    fn headers_received(head: Head, _response: &mut Response,
         scope: &mut Scope<Self::Context>)
         -> Option<(Self, RecvMode, Time)>
     {
         let mut enc = Encoder::new(Cursor::new(Vec::new()));
-        enc.object(7).unwrap();
+        enc.object(8).unwrap();
         enc.text("client").unwrap();
         match head.client {
             Some(ip) => enc.text(&format!("{}", ip)).unwrap(),
@@ -44,37 +44,43 @@ impl Server for BufferedHandler {
             enc.text(header.name).unwrap();
             enc.bytes(header.value).unwrap();
         }
-        // And body will be appended as 7th element in the request_received
+        // And body and socket_id will be appended
+        // as 7th and 8th elements in the request_received method
         Some((BufferedHandler::HeadersRead(enc),
              RecvMode::Buffered(1_048_576),
              scope.now() + Duration::new(120, 0)))
     }
-    fn request_received(self, data: &[u8], response: &mut Response,
+    fn request_received(self, data: &[u8], _response: &mut Response,
         scope: &mut Scope<Self::Context>)
         -> Option<Self>
     {
         match self {
             BufferedHandler::HeadersRead(mut enc) => {
-                enc.text("body").unwrap();
-                enc.bytes(data).unwrap();
                 let arc = Arc::new(Mutex::new(None));
-                let vec = enc.into_writer().into_inner();
                 let sock_id = MANAGER.insert(
                     HttpRequest(arc.clone(), scope.notifier()));
-                MANAGER.send(sock_id, vec.into_boxed_slice());
+
+                enc.text("body").unwrap();
+                enc.bytes(data).unwrap();
+                enc.text("response_socket").unwrap();
+                enc.u64(sock_id as u64).unwrap();
+
+                let vec = enc.into_writer().into_inner();
+                // TODO(tailhook) propagate socket number
+                MANAGER.send(1, vec.into_boxed_slice());
                 Some(BufferedHandler::WaitingResponse(sock_id, arc))
             }
             _ => unreachable!(),
         }
     }
-    fn request_chunk(self, chunk: &[u8], response: &mut Response,
-        scope: &mut Scope<Self::Context>)
+    fn request_chunk(self, _chunk: &[u8], _response: &mut Response,
+        _scope: &mut Scope<Self::Context>)
         -> Option<Self>
     {
         unreachable!();
     }
-    fn request_end(self, response: &mut Response,
-        scope: &mut Scope<Self::Context>)
+    fn request_end(self, _response: &mut Response,
+        _scope: &mut Scope<Self::Context>)
         -> Option<Self>
     {
         unreachable!();

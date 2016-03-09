@@ -52,7 +52,14 @@ impl Machine for Fsm {
         -> Response<Self, Self::Seed>
     {
         match self {
-            Fsm::Main(_) => Response::ok(self),
+            Fsm::Main(main) => {
+                let maybe_el = main.queue.lock().unwrap().pop_front();
+                if let Some(el) = maybe_el {
+                    Response::spawn(Fsm::Main(main), el)
+                } else {
+                    Response::ok(Fsm::Main(main))
+                }
+            }
             Fsm::Carbon(x) => x.spawned(scope).map(Fsm::Carbon, void),
             Fsm::Http(x) => x.spawned(scope).map(Fsm::Http, C::AcceptHttp),
         }
