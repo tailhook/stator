@@ -7,7 +7,7 @@ use inner::{MANAGER, Command, SockId};
 use inner::Socket::Carbon;
 
 #[no_mangle]
-pub extern fn carbon_connect_ipv4(ip: u32, port: u16) -> u64 {
+pub extern fn stator_carbon_connect_ipv4(ip: u32, port: u16) -> u64 {
     let (tx, rx) = channel();
     MANAGER.post_message(
         Command::NewCarbon((
@@ -19,7 +19,7 @@ pub extern fn carbon_connect_ipv4(ip: u32, port: u16) -> u64 {
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_i64(socket: u64,
+pub unsafe extern fn stator_carbon_add_i64(socket: u64,
     name: *const u8, name_len:usize, value: i64)
 {
     let slice = slice::from_raw_parts(name, name_len);
@@ -33,7 +33,7 @@ pub unsafe extern fn carbon_add_i64(socket: u64,
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_i64_at(socket: u64,
+pub unsafe extern fn stator_carbon_add_i64_at(socket: u64,
     name: *const u8, name_len:usize, value: i64, timestamp: u64)
 {
     let slice = slice::from_raw_parts(name, name_len);
@@ -49,7 +49,7 @@ pub unsafe extern fn carbon_add_i64_at(socket: u64,
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_f64(socket: u64,
+pub unsafe extern fn stator_carbon_add_f64(socket: u64,
     name: *const u8, name_len:usize, value: f64)
 {
     let slice = slice::from_raw_parts(name, name_len);
@@ -63,7 +63,7 @@ pub unsafe extern fn carbon_add_f64(socket: u64,
 }
 
 #[no_mangle]
-pub unsafe extern fn carbon_add_f64_at(socket: u64,
+pub unsafe extern fn stator_carbon_add_f64_at(socket: u64,
     name: *const u8, name_len:usize, value: f64, timestamp: u64)
 {
     let slice = slice::from_raw_parts(name, name_len);

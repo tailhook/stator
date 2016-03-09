@@ -9,20 +9,20 @@ from .lib import dll
 IP_ADDRESS_RE = re.compile(
   r"^([1-9]\d{0,2}|0)\.([1-9]\d{0,2}|0)\.([1-9]\d{0,2}|0)\.([1-9]\d{0,2}|0)$")
 
-dll.carbon_connect_ipv4.argtypes = [c_uint32, c_uint16]
-dll.carbon_connect_ipv4.restype = c_ssize_t
+dll.stator_carbon_connect_ipv4.argtypes = [c_uint32, c_uint16]
+dll.stator_carbon_connect_ipv4.restype = c_ssize_t
 
-dll.carbon_add_i64.argtypes = [c_ssize_t, c_char_p, c_size_t, c_int64]
-dll.carbon_add_i64.restype = None
-dll.carbon_add_i64_at.argtypes = [c_ssize_t, c_char_p, c_size_t,
+dll.stator_carbon_add_i64.argtypes = [c_ssize_t, c_char_p, c_size_t, c_int64]
+dll.stator_carbon_add_i64.restype = None
+dll.stator_carbon_add_i64_at.argtypes = [c_ssize_t, c_char_p, c_size_t,
                                   c_int64, c_uint64]
-dll.carbon_add_i64_at.restype = None
+dll.stator_carbon_add_i64_at.restype = None
 
-dll.carbon_add_f64.argtypes = [c_ssize_t, c_char_p, c_size_t, c_double]
-dll.carbon_add_f64.restype = None
-dll.carbon_add_f64_at.argtypes = [c_ssize_t, c_char_p, c_size_t,
+dll.stator_carbon_add_f64.argtypes = [c_ssize_t, c_char_p, c_size_t, c_double]
+dll.stator_carbon_add_f64.restype = None
+dll.stator_carbon_add_f64_at.argtypes = [c_ssize_t, c_char_p, c_size_t,
                                   c_double, c_uint64]
-dll.carbon_add_f64_at.restype = None
+dll.stator_carbon_add_f64_at.restype = None
 
 
 default_instance = None
@@ -50,7 +50,7 @@ class Carbon(object):
             raise ValueError(
                 "Ip address string required, got {!r}".format(host))
         ip = (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]
-        self._id = dll.carbon_connect_ipv4(ip, port)
+        self._id = dll.stator_carbon_connect_ipv4(ip, port)
         if self._id <= 0:
             raise CantCreateConnection()
 
@@ -67,14 +67,16 @@ class Carbon(object):
         key_len = len(key)
         if isinstance(value, int):
             if timestamp is None:
-                dll.carbon_add_i64(self._id, key, key_len, value)
+                dll.stator_carbon_add_i64(self._id, key, key_len, value)
             else:
-                dll.carbon_add_i64_at(self._id, key, key_len, value, timestamp)
+                dll.stator_carbon_add_i64_at(self._id,
+                    key, key_len, value, timestamp)
         else:
             if timestamp is None:
-                dll.carbon_add_f64(self._id, key, key_len, value)
+                dll.stator_carbon_add_f64(self._id, key, key_len, value)
             else:
-                dll.carbon_add_f64_at(self._id, key, key_len, value, timestamp)
+                dll.stator_carbon_add_f64_at(self._id,
+                    key, key_len, value, timestamp)
 
 
 def init_env():
