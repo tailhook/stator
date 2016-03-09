@@ -1,6 +1,7 @@
 mod start;
 mod main;
 mod manager;
+pub mod ffi;
 
 
 use std::io;
@@ -27,10 +28,10 @@ pub struct Manager {
     thread: JoinHandle<Result<(), io::Error>>,
     notifier: Notifier,
     queue: Arc<Mutex<VecDeque<Command>>>,
-    sender: Arc<Mutex<Sender<Vec<u8>>>>,
+    sender: Arc<Mutex<Sender<(SockId, Box<[u8]>)>>>,
     sockets: Arc<Mutex<HashMap<SockId, Socket>>>,
     id_gen: AtomicUsize,
-    pub input: Arc<Mutex<Receiver<Vec<u8>>>>,
+    pub input: Arc<Mutex<Receiver<(SockId, Box<[u8]>)>>>,
 }
 
 pub struct Context;
@@ -54,5 +55,5 @@ pub enum Command {
 pub enum Socket {
     Carbon(carbon::Sink),
     HttpServer,
-    HttpClient,
+    HttpRequest(Arc<Mutex<Option<Box<[u8]>>>>, Notifier),
 }

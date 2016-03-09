@@ -13,10 +13,10 @@ impl Manager {
             self.notifier.wakeup().unwrap();
         }
     }
-    pub fn send(&self, buf: Vec<u8>) {
+    pub fn send(&self, sock_id: SockId, buf: Box<[u8]>) {
         self.sender.lock()
         .expect("sender is not poisoned")
-        .send(buf)
+        .send((sock_id, buf))
         .expect("send succeeds")
     }
     pub fn insert(&self, mut sock: Socket) -> SockId {

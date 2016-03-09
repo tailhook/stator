@@ -12,7 +12,7 @@ authors = ["paul@colomiets.name"]
 
 [dependencies]
 rotor = "0.6.1"
-rotor-http = {rev="175ea94", git="git://github.com/tailhook/rotor-http"}
+rotor-http = {rev="e8f199b", git="git://github.com/tailhook/rotor-http"}
 rotor-carbon = "0.5.1"
 rotor-dns = "0.4.0"
 rotor-tools = "0.3.1"

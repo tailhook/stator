@@ -16,14 +16,26 @@ commands:
     run: [cargo, test]
 
   example-carbon-py: !Command
-    description: "Run python example that submits some garbage to carbon
-                  (prerequisites: make)"
+    description: "Run python example that submits some garbage to carbon"
     container: ubuntu
     environ:
       PYTHONPATH: /work
       LD_LIBRARY_PATH: target/release
       CARBON_HOST: 127.0.0.1
-    run: [python, "examples/carbon.py"]
+    run: |
+      cargo build --release
+      exec python "examples/carbon.py"
+
+  example-http-py: !Command
+    description: "Run python example that serves HTTP hello world"
+    container: ubuntu
+    environ:
+      PYTHONPATH: /work
+      LD_LIBRARY_PATH: target/release
+      CARBON_HOST: 127.0.0.1
+    run: |
+      cargo build --release
+      exec python "examples/http_server.py"
 
   example-graphiti-py: !Command
     description: "Run alternative to carbon, pure-python graphiti example"

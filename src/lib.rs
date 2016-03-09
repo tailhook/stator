@@ -16,3 +16,5 @@ pub use carbon::ffi::stator_carbon_add_i64_at;
 pub use carbon::ffi::stator_carbon_add_f64_at;
 
 pub use http::ffi::stator_http_bind_ipv4;
+
+pub use inner::ffi::stator_wait_message;

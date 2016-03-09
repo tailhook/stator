@@ -1,13 +1,9 @@
 import os
-import re
 from  ctypes import c_uint32, c_uint16, c_ssize_t, c_char_p
 from  ctypes import c_size_t, c_uint64, c_int64, c_double
 
 from .lib import dll
-
-
-IP_ADDRESS_RE = re.compile(
-  r"^([1-9]\d{0,2}|0)\.([1-9]\d{0,2}|0)\.([1-9]\d{0,2}|0)\.([1-9]\d{0,2}|0)$")
+from .util import convert_ip
 
 dll.stator_carbon_connect_ipv4.argtypes = [c_uint32, c_uint16]
 dll.stator_carbon_connect_ipv4.restype = c_ssize_t
@@ -41,15 +37,7 @@ class Carbon(object):
         :param host: **ip address** of the carbon server
         :param port: port of the carbon server
         """
-        match = IP_ADDRESS_RE.match(host)
-        if not match:
-            raise ValueError(
-                "Ip address string required, got {!r}".format(host))
-        parts = map(int, match.groups())
-        if any(p > 255 for p in parts):
-            raise ValueError(
-                "Ip address string required, got {!r}".format(host))
-        ip = (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]
+        ip = convert_ip(host)
         self._id = dll.stator_carbon_connect_ipv4(ip, port)
         if self._id <= 0:
             raise CantCreateConnection()
