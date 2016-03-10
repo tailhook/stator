@@ -16,5 +16,5 @@ pub fn create((addr, id): (SocketAddr, SockId), scope: &mut Scope<Context>)
     -> Response<Fsm, Void>
 {
     let sock = TcpListener::bind(&addr).expect("stator http bind");
-    Fsm::new(sock, scope)
+    Fsm::new(sock, id, scope)
 }

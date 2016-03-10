@@ -3,23 +3,22 @@ use std::time::Duration;
 use std::sync::{Arc, Mutex};
 
 use rotor::{Scope, Time};
-use rotor_http;
 use rotor_http::server::{Server, Response, Head, RecvMode};
 use cbor::Encoder;
 
 use inner::{MANAGER, Context, SockId};
 use inner::Socket::HttpRequest;
 
-impl rotor_http::server::Context for Context { }
-
 pub enum BufferedHandler {
-    HeadersRead(Encoder<Cursor<Vec<u8>>>),
-    WaitingResponse(SockId, Arc<Mutex<Option<Box<[u8]>>>>),
+    HeadersRead { parent: SockId, buffer: Encoder<Cursor<Vec<u8>>> },
+    WaitingResponse { id: SockId, response: Arc<Mutex<Option<Box<[u8]>>>> },
 }
 
 impl Server for BufferedHandler {
+    type Seed = SockId;
     type Context = Context;
-    fn headers_received(head: Head, _response: &mut Response,
+    fn headers_received(parent_socket: SockId,
+        head: Head, _response: &mut Response,
         scope: &mut Scope<Self::Context>)
         -> Option<(Self, RecvMode, Time)>
     {
@@ -46,7 +45,8 @@ impl Server for BufferedHandler {
         }
         // And body and socket_id will be appended
         // as 7th and 8th elements in the request_received method
-        Some((BufferedHandler::HeadersRead(enc),
+        Some((BufferedHandler::HeadersRead { parent: parent_socket,
+                                             buffer: enc },
              RecvMode::Buffered(1_048_576),
              scope.now() + Duration::new(120, 0)))
     }
@@ -55,7 +55,7 @@ impl Server for BufferedHandler {
         -> Option<Self>
     {
         match self {
-            BufferedHandler::HeadersRead(mut enc) => {
+            BufferedHandler::HeadersRead { parent, buffer: mut enc } => {
                 let arc = Arc::new(Mutex::new(None));
                 let sock_id = MANAGER.insert(
                     HttpRequest(arc.clone(), scope.notifier()));
@@ -66,9 +66,9 @@ impl Server for BufferedHandler {
                 enc.u64(sock_id as u64).unwrap();
 
                 let vec = enc.into_writer().into_inner();
-                // TODO(tailhook) propagate socket number
-                MANAGER.send(1, vec.into_boxed_slice());
-                Some(BufferedHandler::WaitingResponse(sock_id, arc))
+                MANAGER.send(parent, vec.into_boxed_slice());
+                Some(BufferedHandler::WaitingResponse { id: sock_id,
+                                                        response: arc })
             }
             _ => unreachable!(),
         }

@@ -50,6 +50,5 @@ def _parse_message(sock_id, buf, buf_len):
 def events():
     while True:
         message = dll.stator_wait_message(_parse_message)
-        print("MESSAGE", message)
         if message:
             yield message
