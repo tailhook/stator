@@ -1,9 +1,11 @@
 use std::thread;
+use std::env;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc::channel;
 use std::sync::atomic::AtomicUsize;
 use std::collections::HashMap;
 
+use env_logger;
 use rotor::{Loop, Config, Response};
 use rotor_tools::loop_ext::LoopInstanceExt;
 
@@ -11,7 +13,11 @@ use super::{Context, Manager, Main, Fsm};
 
 impl Manager {
     pub fn start() -> Manager {
-        let creator = Loop::new(&Config::new()).unwrap();
+        if env::var("RUST_LOG").is_err() {
+            env::set_var("RUST_LOG", "warn");
+        }
+        env_logger::init().expect("init rust logging");
+        let creator = Loop::new(&Config::new()).expect("create rotor loop");
         let mut inst = creator.instantiate(Context);
         let (queue, notifier) = inst.add_and_fetch(Fsm::Main, |scope| {
             let m = Main::new();

@@ -18,6 +18,8 @@ rotor-dns = "0.4.0"
 rotor-tools = "0.3.1"
 lazy_static = "0.1.15"
 cbor-codec = "0.4.2"
+env_logger = "0.3.2"
+log = "0.3.5"
 
 [dev-dependencies]
 argparse = "0.2.1"

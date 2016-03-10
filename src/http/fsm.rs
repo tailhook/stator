@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use rotor::{Scope, Time};
 use rotor_http::server::{Server, Response, Head, RecvMode};
-use cbor::Encoder;
+use cbor::{Encoder, Decoder, Config};
 
 use inner::{MANAGER, Context, SockId};
 use inner::Socket::HttpRequest;
@@ -12,6 +12,70 @@ use inner::Socket::HttpRequest;
 pub enum BufferedHandler {
     HeadersRead { parent: SockId, buffer: Encoder<Cursor<Vec<u8>>> },
     WaitingResponse { id: SockId, response: Arc<Mutex<Option<Box<[u8]>>>> },
+}
+
+fn decode_into_response(data: &[u8], res: &mut Response)
+    -> Result<(), String>
+{
+    let mut dec = Decoder::new(Config::default(), Cursor::new(data));
+    let num = try!(dec.array()
+        .map_err(|e| format!("must be an array: {}", e)));
+    if num != 3 {
+        return Err(format!("array must contain 3 elements: \
+            status, headers, body; contains {} instead", num));
+    }
+    let num2 = try!(dec.array()
+        .map_err(|e| format!("status must be an array: {}", e)));
+    if num2 != 2 {
+        return Err(format!("status array must contain 2 elements: \
+            status_code and status_text; contains {} instead", num));
+    }
+    let status = try!(dec.u16()
+        .map_err(|e| format!("status code must be number 200..599: {}", e)));
+    if status < 200 || status > 599 {
+        return Err(format!("status code must be number 200..599"));
+    }
+    {
+        let text = try!(dec.text_borrow()
+            .map_err(|e| format!("status text must be string: {}", e)));
+        res.status(status, text);
+    }
+    let num3 = try!(dec.object()
+        .map_err(|e| format!("headers must be dict (object): {}", e)));
+    for _ in 0..num3 {
+        // unfortunately can't borrow both
+        let name = try!(dec.text()
+            .map_err(|e| format!(
+                "header name must be string (unicode): {}", e)));
+        let value = try!(dec.bytes_borrow()
+            .map_err(|e| format!(
+                "header value must be bytes (binary): {}", e)));
+        try!(res.add_header(&name, value)
+            .map_err(|e| format!("error adding header: {}", e)));
+    }
+    let body = try!(dec.bytes_borrow()
+        .map_err(|e| format!("response body must be bytes (binary): {}", e)));
+    try!(res.add_length(body.len() as u64)
+        .map_err(|e| format!("error adding response length: {}", e)));
+    try!(res.done_headers()
+        .map_err(|e| format!("error finalizing headers: {}", e)));
+    res.write_body(body);
+    res.done();
+    Ok(())
+}
+
+fn write_502(response: &mut Response) {
+    if !response.is_started() {
+        response.status(502, "Bad Gateway");
+        let data = "<h1>502 Bad Gateway</h1>\n\
+            <p><small>Served for you by stator(rotor-http)</small></p>\n";
+        let bytes = data.as_bytes();
+        response.add_length(bytes.len() as u64).unwrap();
+        response.add_header("Content-Type", b"text/html").unwrap();
+        response.done_headers().unwrap();
+        response.write_body(bytes);
+        response.done();
+    }
 }
 
 impl Server for BufferedHandler {
@@ -90,10 +154,29 @@ impl Server for BufferedHandler {
     {
         unimplemented!();
     }
-    fn wakeup(self, response: &mut Response, scope: &mut Scope<Self::Context>)
+    fn wakeup(self, resp: &mut Response, _scope: &mut Scope<Self::Context>)
         -> Option<Self>
     {
-        unimplemented!();
+        match self {
+            BufferedHandler::WaitingResponse { id, response } => {
+                let data = response.lock().expect("error").take();
+                if let Some(data) = data {
+                    match decode_into_response(&data[..], resp) {
+                        Ok(()) => {}
+                        Err(e) => {
+                            error!("error in response for http request: {}",
+                                e);
+                            write_502(resp);
+                        }
+                    }
+                    None
+                } else {
+                    Some(BufferedHandler::WaitingResponse {
+                        id: id, response: response })
+                }
+            }
+            me @ _ => Some(me)
+        }
     }
 
 }
