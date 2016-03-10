@@ -31,6 +31,7 @@ class HttpRequest(Socket):
         assert isinstance(body, bytes), body
         data = cbor.dumps([status, headers, body])
         dll.stator_http_reply(self.id, data, len(data))
+        self.close()
 
 
 class Http(Socket):

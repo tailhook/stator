@@ -17,6 +17,9 @@ class Socket(object):
         self.id = id
         table.add(self)
 
+    def close(self):
+        table.remove(self.id)
+
     def parse_message(self, input):
         raise RuntimeError("abstract method")
 
@@ -35,6 +38,9 @@ class SocketTable(object):
 
     def get(self, id):
         return self._sockets.get(id)
+
+    def remove(self, id):
+        self._sockets.pop(id, None)
 
 
 table = SocketTable()
