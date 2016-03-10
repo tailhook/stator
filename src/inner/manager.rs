@@ -42,4 +42,9 @@ impl Manager {
         let mut st = self.sockets.lock().expect("stator sockets lock");
         st.get_mut(&id).map(fun).ok_or(())
     }
+    pub fn remove(&self, id: SockId) -> Option<Socket>
+    {
+        let mut st = self.sockets.lock().expect("stator sockets lock");
+        st.remove(&id)
+    }
 }

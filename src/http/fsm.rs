@@ -169,6 +169,7 @@ impl Server for BufferedHandler {
                             write_502(resp);
                         }
                     }
+                    MANAGER.remove(id);
                     None
                 } else {
                     Some(BufferedHandler::WaitingResponse {
