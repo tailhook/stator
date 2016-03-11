@@ -18,7 +18,7 @@ commands:
   example-carbon-py2: !Command
     description: "Run python example that submits some garbage to carbon"
     container: ubuntu
-    environ:
+    environ: &pyenv
       PYTHONPATH: /work
       LD_LIBRARY_PATH: target/release
       CARBON_HOST: 127.0.0.1
@@ -30,10 +30,7 @@ commands:
   example-carbon-py3: !Command
     description: "Run python example that submits some garbage to carbon"
     container: ubuntu
-    environ:
-      PYTHONPATH: /work
-      LD_LIBRARY_PATH: target/release
-      CARBON_HOST: 127.0.0.1
+    environ: *pyenv
     run: |
       set -ex
       cargo build --release
@@ -42,10 +39,7 @@ commands:
   example-http-py2: !Command
     description: "Run python example that serves HTTP hello world"
     container: ubuntu
-    environ:
-      PYTHONPATH: /work
-      LD_LIBRARY_PATH: target/release
-      CARBON_HOST: 127.0.0.1
+    environ: *pyenv
     run: |
       set -ex
       cargo build --release
@@ -55,15 +49,52 @@ commands:
   example-http-py3: !Command
     description: "Run python3 example that serves HTTP hello world"
     container: ubuntu
-    environ:
-      PYTHONPATH: /work
-      LD_LIBRARY_PATH: target/release
-      CARBON_HOST: 127.0.0.1
+    environ: *pyenv
     run: |
       set -ex
       cargo build --release
       export RUST_LOG=debug
       exec python3 "examples/http_server.py"
+
+  example-http-redis-py2: !Supervise
+    description: "Run python example that serves HTTP with Redis"
+    children:
+      redis: &redis !Command
+        container: redis
+        run:
+        - redis-server
+        - --daemonize
+        - no
+        - --port
+        - 3001
+        - --unixsocket
+        - /work/target/redis.sock
+        - --databases
+        - 4
+        - --logfile
+        - /dev/null
+      py: !Command
+        container: ubuntu
+        environ: *pyenv
+        run: |
+          set -ex
+          cargo build --release
+          export RUST_LOG=debug
+          exec python "examples/http_redis.py"
+
+  example-http-redis-py3: !Supervise
+    description: "Run python example that serves HTTP with Redis"
+    children:
+      redis: *redis
+      py: !Command
+        description: "Run python example that serves HTTP with Redis"
+        container: ubuntu
+        environ: *pyenv
+        run: |
+          set -ex
+          cargo build --release
+          export RUST_LOG=debug
+          exec python3 "examples/http_redis.py"
 
   example-graphiti-py: !Command
     description: "Run alternative to carbon, pure-python graphiti example"
@@ -89,6 +120,10 @@ containers:
     - !Py2Install [cbor]
     - !Py3Install [cbor]
 
+    # These ones for examples
+    - !Py2Install [hiredis, redis]
+    - !Py3Install [hiredis, redis]
+
     environ:
       HOME: /work/target
       USER: pc
@@ -98,3 +133,8 @@ containers:
     - !Alpine v3.3
     - !Install [ca-certificates]
     - !Py2Install [six, graphiti]
+
+  redis:
+    setup:
+    - !Alpine v3.3
+    - !Install [redis]
