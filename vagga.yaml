@@ -15,7 +15,7 @@ commands:
     container: ubuntu
     run: [cargo, test]
 
-  example-carbon-py: !Command
+  example-carbon-py2: !Command
     description: "Run python example that submits some garbage to carbon"
     container: ubuntu
     environ:
@@ -27,7 +27,19 @@ commands:
       cargo build --release
       exec python "examples/carbon.py"
 
-  example-http-py: !Command
+  example-carbon-py3: !Command
+    description: "Run python example that submits some garbage to carbon"
+    container: ubuntu
+    environ:
+      PYTHONPATH: /work
+      LD_LIBRARY_PATH: target/release
+      CARBON_HOST: 127.0.0.1
+    run: |
+      set -ex
+      cargo build --release
+      exec python3 "examples/carbon.py"
+
+  example-http-py2: !Command
     description: "Run python example that serves HTTP hello world"
     container: ubuntu
     environ:
@@ -39,6 +51,19 @@ commands:
       cargo build --release
       export RUST_LOG=debug
       exec python "examples/http_server.py"
+
+  example-http-py3: !Command
+    description: "Run python3 example that serves HTTP hello world"
+    container: ubuntu
+    environ:
+      PYTHONPATH: /work
+      LD_LIBRARY_PATH: target/release
+      CARBON_HOST: 127.0.0.1
+    run: |
+      set -ex
+      cargo build --release
+      export RUST_LOG=debug
+      exec python3 "examples/http_server.py"
 
   example-graphiti-py: !Command
     description: "Run alternative to carbon, pure-python graphiti example"

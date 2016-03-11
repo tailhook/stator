@@ -1,3 +1,4 @@
+import sys
 import cbor
 
 from  ctypes import c_uint64, c_uint32, c_uint16, c_ssize_t, c_char_p
@@ -14,6 +15,12 @@ dll.stator_http_reply.argtypes = [c_uint64, c_void_p, c_size_t]
 dll.stator_http_reply.restype = None
 
 
+if sys.version_info < (3, 0):
+    UNICODE_TYPE = unicode
+else:
+    UNICODE_TYPE = str
+
+
 class CantBindAddress(Exception):
     pass
 
@@ -26,7 +33,7 @@ class HttpRequest(Socket):
 
     def reply(self, status, headers, body):
         assert 200 <= status[0] <= 599, status
-        assert isinstance(status[1], unicode), status
+        assert isinstance(status[1], UNICODE_TYPE), status
         assert isinstance(headers, dict), headers
         assert isinstance(body, bytes), body
         data = cbor.dumps([status, headers, body])

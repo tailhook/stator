@@ -10,7 +10,7 @@ def convert_ip(host):
     if not match:
         raise ValueError(
             "Ip address string required, got {!r}".format(host))
-    parts = map(int, match.groups())
+    parts = list(map(int, match.groups()))
     if any(p > 255 for p in parts):
         raise ValueError(
             "Ip address string required, got {!r}".format(host))

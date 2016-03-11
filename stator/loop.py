@@ -1,3 +1,4 @@
+import sys
 from io import BytesIO
 from ctypes import CFUNCTYPE, POINTER, c_uint64, c_char, c_size_t, c_uint8
 from ctypes import py_object, c_void_p
@@ -9,11 +10,16 @@ _message_parser = CFUNCTYPE(py_object, c_uint64, c_void_p, c_size_t)
 dll.stator_wait_message.argtypes = [_message_parser]
 dll.stator_wait_message.restype = py_object
 
+if sys.version_info < (3, 0):
+    INT_TYPES = (int, long)
+else:
+    INT_TYPES = int
+
 
 class Socket(object):
 
     def __init__(self, id):
-        assert isinstance(id, (int, long)), (type(id), id)
+        assert isinstance(id, INT_TYPES), (type(id), id)
         self.id = id
         table.add(self)
 
