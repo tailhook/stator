@@ -56,6 +56,12 @@ commands:
       export RUST_LOG=debug
       exec python3 "examples/http_server.py"
 
+  example-aiohttp-py3: !Command
+    description: "Run asyncio/aiohttp example to compare performance"
+    container: ubuntu
+    environ: *pyenv
+    run: [python3, "examples/aio-http.py"]
+
   example-http-redis-py2: !Supervise
     description: "Run python example that serves HTTP with Redis"
     children:
@@ -121,8 +127,9 @@ containers:
     - !Py3Install [cbor]
 
     # These ones for examples
+    - !PipConfig {dependencies: true}
     - !Py2Install [hiredis, redis]
-    - !Py3Install [hiredis, redis]
+    - !Py3Install [hiredis, redis, aiohttp]
 
     environ:
       HOME: /work/target
