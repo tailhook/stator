@@ -60,7 +60,13 @@ commands:
     description: "Run asyncio/aiohttp example to compare performance"
     container: ubuntu
     environ: *pyenv
-    run: [python3, "examples/aio-http.py"]
+    run: [python3, "examples/bench-aiohttp.py"]
+
+  example-tornado-py3: !Command
+    description: "Run tornado HTTP example to compare performance"
+    container: ubuntu
+    environ: *pyenv
+    run: [python3, "examples/bench-tornado.py"]
 
   example-http-redis-py2: !Supervise
     description: "Run python example that serves HTTP with Redis"
@@ -129,7 +135,7 @@ containers:
     # These ones for examples
     - !PipConfig {dependencies: true}
     - !Py2Install [hiredis, redis]
-    - !Py3Install [hiredis, redis, aiohttp]
+    - !Py3Install [hiredis, redis, aiohttp, tornado]
 
     environ:
       HOME: /work/target
