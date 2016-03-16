@@ -68,6 +68,18 @@ commands:
     environ: *pyenv
     run: [python3, "examples/bench-tornado.py"]
 
+  example-uwsgi-py3: !Command
+    description: "Run uwsgi HTTP example to compare performance"
+    container: ubuntu
+    environ: *pyenv
+    run:
+    - uwsgi
+    - --http-socket=:3000
+    - --wsgi-file=examples/uwsgi.py
+    - --master
+    - --processes=1
+    - --threads=1
+
   example-http-redis-py2: !Supervise
     description: "Run python example that serves HTTP with Redis"
     children:
@@ -122,7 +134,7 @@ containers:
     - !Ubuntu trusty
     - !UbuntuUniverse ~
     - !Install [make, checkinstall, wget, ca-certificates,
-                libssl-dev, build-essential]
+                libssl-dev, build-essential, python3-dev]
 
     - !TarInstall
       url: "http://static.rust-lang.org/dist/rust-1.7.0-x86_64-unknown-linux-gnu.tar.gz"
@@ -135,7 +147,7 @@ containers:
     # These ones for examples
     - !PipConfig {dependencies: true}
     - !Py2Install [hiredis, redis]
-    - !Py3Install [hiredis, redis, aiohttp, tornado]
+    - !Py3Install [hiredis, redis, aiohttp, tornado, uwsgi]
 
     environ:
       HOME: /work/target
