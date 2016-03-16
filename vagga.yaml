@@ -79,6 +79,7 @@ commands:
     - --master
     - --processes=1
     - --threads=1
+    - --disable-logging
 
   example-http-redis-py2: !Supervise
     description: "Run python example that serves HTTP with Redis"
