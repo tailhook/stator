@@ -148,7 +148,7 @@ containers:
     # These ones for examples
     - !PipConfig {dependencies: true}
     - !Py2Install [hiredis, redis]
-    - !Py3Install [hiredis, redis, aiohttp, tornado, uwsgi]
+    - !Py3Install [hiredis, redis, aiohttp, tornado, gevent, uwsgi]
 
     environ:
       HOME: /work/target
