@@ -5,7 +5,7 @@ from time import clock
 
 
 def main():
-    sock = http.Http('127.0.0.1', 3000)
+    sock = http.Http('0.0.0.0', 3000)
     for req in loop.events():
         req.reply(
             [200, u"OK"],
