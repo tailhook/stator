@@ -128,38 +128,30 @@ commands:
       CARBON_HOST: 127.0.0.1
     run: [python, "examples/alternative-graphiti.py"]
 
-  bench-stator-flaky: !Supervise
+  bench-stator-starvation: !Supervise
     description: Run stator benchmark with some simulated network failure
     children:
-      stator: !Command
-        <<: *http-py3
-        network: {ip: 172.18.0.1}
+      stator: *http-py3
       bench: &bench !Command
         container: bench
-        network: {ip: 172.18.0.2}
         run: |
-          ip a
-          tc qdisc add dev benchg root netem delay 2
           sleep 5 # get time for python to start
-          wrk -d 60 -c 20 http://172.18.0.1:3000 --latency
-      flakyness: &flakyness !BridgeCommand
-        container: bench
-        run: |
-          set -x
-          sleep 15
-          vagga _network isolate bench
-          sleep 1
-          vagga _network fullmesh
-          sleep 1000
+          for rate in $(seq 10000 1000 25000); do
+            wrk -d 10 -R $rate http://127.0.0.1:3000 --latency | awk '
+              /50.000%/ { p50=$2; }
+              /75.000%/ { p75=$2; }
+              /99.000%/ { p99=$2; }
+              /100.000%/ { max=$2; }
+              END { print '$rate',p50,p75,p99,max; }
+            '
+            top -d1 | grep ^CPU: | head -n3 | tail -n+2
+          done
 
-  bench-uwsgi-flaky: !Supervise
+  bench-uwsgi-starvation: !Supervise
     description: Run uwsgi benchmark with some simulated network failure
     children:
-      stator: !Command
-        <<: *uwsgi-py3
-        network: {ip: 172.18.0.1}
+      stator: *uwsgi-py3
       bench: *bench
-      flakyness: *flakyness
 
 containers:
 
