@@ -142,7 +142,8 @@ commands:
               /75.000%/ { p75=$2; }
               /99.000%/ { p99=$2; }
               /100.000%/ { max=$2; }
-              END { print '$rate',p50,p75,p99,max; }
+              /Requests\/sec:/ { real=$2; }
+              END { print '$rate',real,p50,p75,p99,max; }
             '
             top -d1 | grep ^CPU: | head -n3 | tail -n+2
           done
