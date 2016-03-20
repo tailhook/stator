@@ -129,7 +129,7 @@ commands:
     run: [python, "examples/alternative-graphiti.py"]
 
   bench-stator-starvation: !Supervise
-    description: Run stator benchmark with some simulated network failure
+    description: Run a sequence of stator bencmarks
     children:
       stator: *http-py3
       bench: &bench !Command
@@ -149,7 +149,7 @@ commands:
           done
 
   bench-uwsgi-starvation: !Supervise
-    description: Run uwsgi benchmark with some simulated network failure
+    description: Run a sequence of uwsgi bencmarks
     children:
       stator: *uwsgi-py3
       bench: *bench
