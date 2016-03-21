@@ -56,6 +56,16 @@ commands:
       export RUST_LOG=debug
       exec python3 "examples/http_server.py"
 
+  example-aio-py3: &http-py3 !Command
+    description: "Run python3 example with asyncio that serves HTTP hello world"
+    container: ubuntu
+    environ: *pyenv
+    run: |
+      set -ex
+      cargo build --release
+      export RUST_LOG=debug
+      exec python3 "examples/http_asyncio.py"
+
   example-aiohttp-py3: !Command
     description: "Run asyncio/aiohttp example to compare performance"
     container: ubuntu

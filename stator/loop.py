@@ -1,14 +1,19 @@
 import sys
 from io import BytesIO
 from ctypes import CFUNCTYPE, POINTER, c_uint64, c_char, c_size_t, c_uint8
-from ctypes import py_object, c_void_p
+from ctypes import py_object, c_void_p, c_int
 
 from .lib import dll
 
 
 _message_parser = CFUNCTYPE(py_object, c_uint64, c_void_p, c_size_t)
-dll.stator_wait_message.argtypes = [_message_parser]
+_skip = CFUNCTYPE(py_object)
+dll.stator_wait_message.argtypes = [_message_parser, _skip]
 dll.stator_wait_message.restype = py_object
+dll.stator_next_message.argtypes = [_message_parser, _skip]
+dll.stator_next_message.restype = py_object
+dll.stator_get_input_fd.argtypes = []
+dll.stator_get_input_fd.restype = c_int
 
 if sys.version_info < (3, 0):
     INT_TYPES = (int, long)
@@ -52,15 +57,31 @@ class SocketTable(object):
 table = SocketTable()
 
 @_message_parser
-def _parse_message(sock_id, buf, buf_len):
-    sock = table.get(sock_id)
-    if sock is None:
-        return None
-    buf = BytesIO((c_uint8 * buf_len).from_address(buf))
-    return sock.parse_message(buf)
+def parse_message(sock_id, buf, buf_len):
+    try:
+        sock = table.get(sock_id)
+        if sock is None:
+            return None
+        buf = BytesIO((c_uint8 * buf_len).from_address(buf))
+        return sock.parse_message(buf)
+    except BaseException as e:
+        return e
+
+
+@_skip
+def no_message():
+    return None
+
+@_skip
+def blocking_io():
+    return False
+
 
 def events():
     while True:
-        message = dll.stator_wait_message(_parse_message)
-        if message:
-            yield message
+        message = dll.stator_wait_message(parse_message, no_message)
+        if message is not None:
+            if isinstance(message, BaseException):
+                raise message
+            else:
+                yield message

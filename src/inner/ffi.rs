@@ -1,12 +1,12 @@
 use std::os::unix::io::RawFd;
-use std::ptr::null_mut;
 
 use inner::MANAGER;
 
 
 #[no_mangle]
 pub extern fn stator_wait_message(
-    cb: extern fn(u64, *const u8, usize) -> *mut u8)
+    cb: extern fn(u64, *const u8, usize) -> *mut u8,
+    interrupted_cb: extern fn() -> *mut u8)
     -> *mut u8
 {
     loop {
@@ -20,14 +20,15 @@ pub extern fn stator_wait_message(
         }
         if !MANAGER.input_notifier.wait() {
             // this allows KeyboardInterrupt
-            return null_mut();
+            return interrupted_cb();
         }
     }
 }
 
 #[no_mangle]
 pub extern fn stator_next_message(
-    cb: extern fn(u64, *const u8, usize) -> *mut u8)
+    cb: extern fn(u64, *const u8, usize) -> *mut u8,
+    no_message_cb: extern fn() -> *mut u8)
     -> *mut u8
 {
     let mut inp = MANAGER.input.lock().expect("stator input");
@@ -35,7 +36,7 @@ pub extern fn stator_next_message(
         return cb(sock_id as u64, &data[..][0], data.len())
     } else {
         MANAGER.input_notifier.check();
-        return null_mut();
+        return no_message_cb();
     }
 }
 
