@@ -1,15 +1,15 @@
 use std::thread;
 use std::env;
 use std::sync::{Arc, Mutex};
-use std::sync::mpsc::channel;
 use std::sync::atomic::AtomicUsize;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 use env_logger;
 use rotor::{Loop, Config, Response};
 use rotor_tools::loop_ext::LoopInstanceExt;
 
 use super::{Context, Manager, Main, Fsm};
+use super::eventfd::Async;
 
 impl Manager {
     pub fn start() -> Manager {
@@ -24,7 +24,6 @@ impl Manager {
             let q = m.queue.clone();
             Response::ok((m, (q, scope.notifier())))
         }).unwrap();
-        let (tx, rx) = channel();
         Manager {
             notifier: notifier,
             queue: queue,
@@ -33,8 +32,8 @@ impl Manager {
             }),
             sockets: Arc::new(Mutex::new(HashMap::new())),
             id_gen: AtomicUsize::new(1),
-            sender: Arc::new(Mutex::new(tx)),
-            input: Arc::new(Mutex::new(rx)),
+            input: Arc::new(Mutex::new(VecDeque::new())),
+            input_notifier: Async::new(),
         }
     }
 }

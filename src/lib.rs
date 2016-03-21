@@ -4,6 +4,7 @@ extern crate rotor_tools;
 extern crate rotor_http;
 extern crate rotor_carbon;
 extern crate cbor;
+extern crate nix;
 extern crate env_logger;
 #[macro_use] extern crate log;
 
@@ -21,3 +22,5 @@ pub use http::ffi::stator_http_bind_ipv4;
 pub use http::ffi::stator_http_reply;
 
 pub use inner::ffi::stator_wait_message;
+pub use inner::ffi::stator_next_message;
+pub use inner::ffi::stator_get_input_fd;

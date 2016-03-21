@@ -14,10 +14,11 @@ impl Manager {
         }
     }
     pub fn send(&self, sock_id: SockId, buf: Box<[u8]>) {
-        self.sender.lock()
-        .expect("sender is not poisoned")
-        .send((sock_id, buf))
-        .expect("send succeeds")
+        let mut lock = self.input.lock().expect("sender is not poisoned");
+        lock.push_back((sock_id, buf));
+        if lock.len() == 1 {
+            self.input_notifier.notify();
+        }
     }
     pub fn insert(&self, sock: Socket) -> SockId {
         loop {

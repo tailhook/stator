@@ -1,12 +1,12 @@
 mod start;
 mod main;
 mod manager;
+mod eventfd;
 pub mod ffi;
 
 
 use std::io;
 use std::sync::{Arc, Mutex};
-use std::sync::mpsc::{Receiver, Sender};
 use std::thread::JoinHandle;
 use std::sync::atomic::AtomicUsize;
 use std::collections::{VecDeque, HashMap};
@@ -28,10 +28,10 @@ pub struct Manager {
     thread: JoinHandle<Result<(), io::Error>>,
     notifier: Notifier,
     queue: Arc<Mutex<VecDeque<Command>>>,
-    sender: Arc<Mutex<Sender<(SockId, Box<[u8]>)>>>,
     sockets: Arc<Mutex<HashMap<SockId, Socket>>>,
     id_gen: AtomicUsize,
-    pub input: Arc<Mutex<Receiver<(SockId, Box<[u8]>)>>>,
+    input: Arc<Mutex<VecDeque<(SockId, Box<[u8]>)>>>,
+    input_notifier: eventfd::Async,
 }
 
 pub struct Context;
