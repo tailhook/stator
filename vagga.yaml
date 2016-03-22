@@ -130,6 +130,22 @@ commands:
           export RUST_LOG=debug
           exec python3 "examples/http_asyncio_redis.py"
 
+  example-uwsgi-redis-py3: !Supervise
+    description: "Run uwsgi example with asyncio http and redis"
+    children:
+      redis: *redis
+      py: !Command
+        container: ubuntu
+        environ: *pyenv
+        run:
+        - uwsgi
+        - --http-socket=:3000
+        - --wsgi-file=examples/uwsgi-redis.py
+        - --master
+        - --processes=1
+        - --threads=1
+        - --disable-logging
+
 
   example-http-redis-py3: !Supervise
     description: "Run python example that serves HTTP with Redis"
@@ -198,7 +214,8 @@ containers:
     # These ones for examples
     - !PipConfig {dependencies: true}
     - !Py2Install [hiredis, redis]
-    - !Py3Install [hiredis, redis, aiohttp, tornado, gevent, uwsgi, aioredis]
+    - !Py3Install [hiredis, redis, aiohttp, tornado, gevent, uwsgi,
+                   aioredis]
 
     environ:
       HOME: /work/target

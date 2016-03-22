@@ -12,6 +12,8 @@ def main():
     loop = asyncio.get_event_loop()
     redis = loop.run_until_complete(
         aioredis.create_redis("/work/target/redis.sock", loop=loop))
+    #redis = loop.run_until_complete(
+    #    aioredis.create_redis(("127.0.0.1", 3001), loop=loop))
 
     @asyncio.coroutine
     def dispatch(loop, req):
