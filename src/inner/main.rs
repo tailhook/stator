@@ -3,10 +3,12 @@ use std::collections::VecDeque;
 
 use rotor::void::{Void, unreachable};
 use rotor::{Machine, Scope, EventSet, Response};
+use rotor::mio::tcp::TcpStream;
 
 use super::{Context, Fsm, Main, Command, Command as C};
 use carbon;
 use http;
+use redis;
 
 impl Main {
     pub fn new() -> Main {
@@ -30,6 +32,9 @@ impl Machine for Fsm {
             Command::NewCarbon(x) => {
                 carbon::create(x, scope).wrap(Fsm::Carbon)
             }
+            Command::NewRedis(x) => {
+                redis::create(x, scope).wrap(Fsm::Redis)
+            }
             Command::NewHttp(x) => {
                 http::create(x, scope).wrap(Fsm::Http)
             }
@@ -46,6 +51,7 @@ impl Machine for Fsm {
             Fsm::Main(_) => Response::ok(self),
             Fsm::Carbon(x) => x.ready(ev, scope).map(Fsm::Carbon, void),
             Fsm::Http(x) => x.ready(ev, scope).map(Fsm::Http, C::AcceptHttp),
+            Fsm::Redis(x) => x.ready(ev, scope).map(Fsm::Redis, void),
         }
     }
     fn spawned(self, scope: &mut Scope<Self::Context>)
@@ -61,6 +67,7 @@ impl Machine for Fsm {
                 }
             }
             Fsm::Carbon(x) => x.spawned(scope).map(Fsm::Carbon, void),
+            Fsm::Redis(x) => x.spawned(scope).map(Fsm::Redis, void),
             Fsm::Http(x) => x.spawned(scope).map(Fsm::Http, C::AcceptHttp),
         }
     }
@@ -70,6 +77,7 @@ impl Machine for Fsm {
         match self {
             Fsm::Main(_) => Response::ok(self),
             Fsm::Carbon(x) => x.timeout(scope).map(Fsm::Carbon, void),
+            Fsm::Redis(x) => x.timeout(scope).map(Fsm::Redis, void),
             Fsm::Http(x) => x.timeout(scope).map(Fsm::Http, C::AcceptHttp),
         }
     }
@@ -86,6 +94,7 @@ impl Machine for Fsm {
                 }
             }
             Fsm::Carbon(x) => x.wakeup(scope).map(Fsm::Carbon, void),
+            Fsm::Redis(x) => x.wakeup(scope).map(Fsm::Redis, void),
             Fsm::Http(x) => x.wakeup(scope).map(Fsm::Http, C::AcceptHttp),
         }
     }

@@ -13,11 +13,13 @@ authors = ["paul@colomiets.name"]
 [dependencies]
 rotor = "0.6.1"
 rotor-http = {rev="ca2f2f6", git="git://github.com/tailhook/rotor-http"}
+rotor-stream = { rev="a870b67", git="git://github.com/tailhook/rotor-stream" }
+rotor-redis = {rev="46edf2b", git="git://github.com/tailhook/rotor-redis"}
 rotor-carbon = "0.5.1"
 rotor-dns = "0.4.0"
 rotor-tools = "0.3.1"
 lazy_static = "0.1.15"
-cbor-codec = "0.4.2"
+cbor-codec = "0.5.0"
 env_logger = "0.3.2"
 log = "0.3.5"
 nix = {version = "0.5.0", features = ["eventfd"]}

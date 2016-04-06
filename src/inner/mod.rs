@@ -16,6 +16,7 @@ use rotor::mio::tcp::TcpStream;
 
 use carbon;
 use http;
+use redis;
 
 
 pub type SockId = usize; // because there is no atomic u64
@@ -45,10 +46,12 @@ pub enum Fsm {
     Main(Main),
     Carbon(carbon::Fsm<Context, TcpStream>),
     Http(http::Fsm),
+    Redis(redis::Fsm<TcpStream>),
 }
 pub enum Command {
     NewCarbon(carbon::Seed),
     NewHttp(http::Seed),
+    NewRedis(redis::Seed),
     AcceptHttp(<http::Fsm as Machine>::Seed),
 }
 
@@ -56,4 +59,5 @@ pub enum Socket {
     Carbon(carbon::Sink),
     HttpServer,
     HttpRequest(Arc<Mutex<Option<Box<[u8]>>>>, Notifier),
+    Redis(redis::Redis<TcpStream>)
 }

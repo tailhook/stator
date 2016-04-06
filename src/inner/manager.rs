@@ -21,6 +21,11 @@ impl Manager {
         }
     }
     pub fn insert(&self, sock: Socket) -> SockId {
+        self.insert_with(|_| sock)
+    }
+    pub fn insert_with<F: FnOnce(SockId) -> Socket>(&self, fun: F)
+        -> SockId
+    {
         loop {
             let nid = self.id_gen.fetch_add(1, Ordering::SeqCst);
             if nid == usize::MAX {
@@ -31,7 +36,7 @@ impl Manager {
             match st.entry(nid) {
                 Occupied(..) => continue,
                 Vacant(x) => {
-                    x.insert(sock);
+                    x.insert(fun(nid));
                     return nid;
                 }
             }

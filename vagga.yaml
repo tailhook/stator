@@ -91,8 +91,8 @@ commands:
     - --threads=1
     - --disable-logging
 
-  example-http-redis-py2: !Supervise
-    description: "Run python example that serves HTTP with Redis"
+  example-http-sync-redis-py2: !Supervise
+    description: "Run python example that serves HTTP with Redis (synchronous)"
     children:
       redis: &redis !Command
         container: redis
@@ -115,10 +115,10 @@ commands:
           set -ex
           cargo build --release
           export RUST_LOG=debug
-          exec python "examples/http_redis.py"
+          exec python "examples/http_sync_redis.py"
 
   example-aio-redis: !Supervise
-    description: "Run python3 example with asyncio http and redis"
+    description: "Run python3 example with asyncio http and aio-redis"
     children:
       redis: *redis
       py: !Command
@@ -129,6 +129,19 @@ commands:
           cargo build --release
           export RUST_LOG=debug
           exec python3 "examples/http_asyncio_redis.py"
+
+  example-redis: !Supervise
+    description: "Run python3 example with asyncio http and redis"
+    children:
+      redis: *redis
+      py: !Command
+        container: ubuntu
+        environ: *pyenv
+        run: |
+          set -ex
+          cargo build --release
+          export RUST_LOG=debug
+          exec python3 "examples/redis_asyncio.py"
 
   example-uwsgi-redis-py3: !Supervise
     description: "Run uwsgi example with asyncio http and redis"
@@ -147,8 +160,8 @@ commands:
         - --disable-logging
 
 
-  example-http-redis-py3: !Supervise
-    description: "Run python example that serves HTTP with Redis"
+  example-http-sync-redis-py3: !Supervise
+    description: "Run python example that serves HTTP with Redis (synchronous)"
     children:
       redis: *redis
       py: !Command
@@ -159,7 +172,7 @@ commands:
           set -ex
           cargo build --release
           export RUST_LOG=debug
-          exec python3 "examples/http_redis.py"
+          exec python3 "examples/http_sync_redis.py"
 
   example-graphiti-py: !Command
     description: "Run alternative to carbon, pure-python graphiti example"
