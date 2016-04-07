@@ -28,7 +28,7 @@ impl Manager {
                 let q = m.queue.clone();
                 Response::ok((m, (q, scope.notifier())))
             }).unwrap();
-            {tx}.send((queue, notifier));
+            {tx}.send((queue, notifier)).expect("send notifier");
             inst.run()
         });
         let (queue, notifier) = {rx}.recv().expect("message from I/O thread");

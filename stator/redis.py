@@ -38,5 +38,5 @@ class Redis(object):
         for i, val in enumerate(bargs):
             buf[i].data = val
             buf[i].len = len(val)
-        cmd_id = stator_redis_queue(self._id, buf, num)
+        cmd_id = dll.stator_redis_queue(self._id, buf, num)
         print("Redis command id", cmd_id)
