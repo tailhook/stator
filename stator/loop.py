@@ -1,4 +1,5 @@
 import sys
+import logging
 from io import BytesIO
 from ctypes import CFUNCTYPE, POINTER, c_uint64, c_char, c_size_t, c_uint8
 from ctypes import py_object, c_void_p, c_int
@@ -6,6 +7,7 @@ from ctypes import py_object, c_void_p, c_int
 from .lib import dll
 
 
+log = logging.getLogger(__name__)
 _message_parser = CFUNCTYPE(py_object, c_uint64, c_void_p, c_size_t)
 _skip = CFUNCTYPE(py_object)
 dll.stator_wait_message.argtypes = [_message_parser, _skip]
@@ -26,10 +28,10 @@ class Socket(object):
     def __init__(self, id):
         assert isinstance(id, INT_TYPES), (type(id), id)
         self.id = id
-        table.add(self)
+        TABLE.add(self)
 
     def close(self):
-        table.remove(self.id)
+        TABLE.remove(self.id)
 
     def parse_message(self, input):
         raise RuntimeError("abstract method")
@@ -54,13 +56,15 @@ class SocketTable(object):
         self._sockets.pop(id, None)
 
 
-table = SocketTable()
+TABLE = SocketTable()
 
 @_message_parser
 def parse_message(sock_id, buf, buf_len):
     try:
-        sock = table.get(sock_id)
+        sock = TABLE.get(sock_id)
         if sock is None:
+            log.debug("Got message for socket {} which is already closed",
+                sock_id)
             return None
         buf = BytesIO((c_uint8 * buf_len).from_address(buf))
         return sock.parse_message(buf)

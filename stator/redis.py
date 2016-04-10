@@ -23,20 +23,19 @@ class CantCreateConnection(Exception):
     pass
 
 
-class Redis(object):
+def connect_ip(host='127.0.0.1', port=6379, db=0):
+    ip = convert_ip(host)
+    id = dll.stator_redis_connect_ipv4(ip, port, db)
+    if id <= 0:
+        raise CantCreateConnection()
+    return id
 
-    def __init__(self, host='127.0.0.1', port=6379, db=0):
-        ip = convert_ip(host)
-        self._id = dll.stator_redis_connect_ipv4(ip, port, db)
-        if self._id <= 0:
-            raise CantCreateConnection()
+def command(conn_id, args):
+    bargs = list(map(bytes, args))
+    num = len(bargs)
+    buf = (Item * num)()
+    for i, val in enumerate(bargs):
+        buf[i].data = val
+        buf[i].len = len(val)
+    return dll.stator_redis_queue(conn_id, buf, num)
 
-    def command(self, args):
-        bargs = list(map(bytes, args))
-        num = len(bargs)
-        buf = (Item * num)()
-        for i, val in enumerate(bargs):
-            buf[i].data = val
-            buf[i].len = len(val)
-        cmd_id = dll.stator_redis_queue(self._id, buf, num)
-        print("Redis command id", cmd_id)

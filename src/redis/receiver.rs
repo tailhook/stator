@@ -50,6 +50,7 @@ impl Receiver {
 impl rotor_redis::Receiver for Receiver {
     fn receive(&mut self, msg: &Message) {
         let mut enc = Encoder::new(Cursor::new(Vec::new()));
+        enc.u64(self.1 as u64).unwrap();
         write_message(&mut enc, msg);
         let vec = enc.into_writer().into_inner();
         MANAGER.send(self.0, vec.into_boxed_slice());

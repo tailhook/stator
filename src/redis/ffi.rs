@@ -1,5 +1,7 @@
+use std::io::Write;
 use std::net::{SocketAddr, SocketAddrV4 as V4, Ipv4Addr};
 use std::sync::mpsc::channel;
+use std::slice::from_raw_parts;
 
 use rotor_redis::conversion::ToRedisCommand;
 use rotor_stream::Buf;
@@ -54,5 +56,16 @@ pub extern fn stator_redis_queue(sock: u64, args: *const Arg, num: usize)
 
 impl ToRedisCommand for ArgSet {
     fn write_into(self, buf: &mut Buf) {
+        unsafe {
+            let items = from_raw_parts(self.items, self.num);
+            let n = items.len();
+            write!(buf, "*{}\r\n", n).expect("buffer write");
+            for item in items {
+                let slc = from_raw_parts(item.data, item.len);
+                write!(buf, "${}\r\n", slc.len()).expect("buffer write");
+                buf.write(slc).expect("buffer write");
+                buf.write(b"\r\n").expect("buffer write");
+            }
+        }
     }
 }
