@@ -260,3 +260,18 @@ containers:
     setup:
     - !Alpine v3.3
     - !Install [redis]
+
+  tank:
+    auto-clean: true
+    setup:
+    - !Ubuntu trusty
+    - !UbuntuPPA yandex-load/main
+    - !PipConfig { dependencies: true }
+    - !BuildDeps [libxml2-dev, libxslt1-dev, zlib1g-dev]
+    - !Install [libxml2, libxslt1.1, zlib1g]
+    - !Sh "apt-get install -y --force-yes phantom"
+    - !Py2Install [setuptools, yandextank, yatank-online]
+    volumes:
+      /run: !Tmpfs
+        subdirs:
+          lock:
